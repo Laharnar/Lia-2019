@@ -3,17 +3,17 @@ import lia.Api;
 import lia.api.UnitData;
 
 public class ScoutingGroup implements UnitBehaviour {
-    UnitData[] group;
+    int[] group;
     LongPlanning[] planner;
 
-    ScoutingGroup(UnitData[] units, MyMap map){
-        group = units;
-        planner = new LongPlanning[units.length];
+    ScoutingGroup(int[] unitIds, MyMap map, Vec2d startingPos){
+        group = unitIds;
+        planner = new LongPlanning[unitIds.length];
 
         for (int i = 0; i < group.length; i++) {
             planner[i] = new LongPlanning();
-            planner[i].SetPlan_2Sides(units[i].getPos().x > 300,
-                    (double)(i+1)/(group.length) *(map.height-40f), map.width);
+            planner[i].SetPlan_2Sides(startingPos.x > 300,
+                    (double)(i+1)/(group.length) *(map.height-5), map.width);
         }
     }
 
@@ -28,7 +28,8 @@ public class ScoutingGroup implements UnitBehaviour {
 
     public void ExecutePlans(Api api) {
         for (int i = 0; i < group.length; i++) {
-            api.navigationStart(group[i].id, (int)planner[i].GetCurrent().x+1,(int) planner[i].GetCurrent().y+1);
+            System.out.println("Navigation : "+group[i]);
+            api.navigationStart(group[i], (int)planner[i].GetCurrent().x+1,(int) planner[i].GetCurrent().y+1);
         }
     }
 
@@ -37,15 +38,16 @@ public class ScoutingGroup implements UnitBehaviour {
             planner[i].ToNext();
         }
     }
-boolean once = false;
-    public boolean Done() {
+    public boolean Done(UnitData[] units) {
         for (int i = 0; i < group.length; i++) {
-            if (once == false) {
-                System.out.println("id: " + group[i].id + " " + group[i].navigationPath.length);
+            for (int j = 0; j < units.length; j++) {
+                if (units[i].id == group[i]){
+                    if (IsDone(units[group[i]]) == false){
+                        return false;
+                    }
+                }
             }
-            if (IsDone(group[i]) == false){
-                return false;
-            }
+
         }
         once = true;
 

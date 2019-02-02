@@ -92,15 +92,17 @@ public class MyBot implements Bot {
     public synchronized void processGameState(GameState gameState, Api api) {
         if (firstInit == false) {
             firstInit = true;
-            units are different every source
-                    aja pa mapa pathfinding goes from 1
-            scouts = new ScoutingGroup(gameState.units, myMap);
+            int[] x = new int[gameState.units.length];
+            for (int i = 0; i < x.length; i++) {
+                x[i] = i;
+            }
+            scouts = new ScoutingGroup(x, myMap, gameState.units[0].getPos());
             scouts.ExecutePlans(api);
             System.out.println(gameState.units[0].navigationPath.length);
-            testing =gameState.units[0];
+            testing = gameState.units[0];
             return;
         }
-        if (scouts.Done() && state == 0){
+        if (scouts.Done(gameState.units) && state == 0){
 
             System.out.println(gameState.units[0].navigationPath.length);
             System.out.println("Next state");

@@ -1,9 +1,23 @@
 import com.sun.javafx.geom.Vec2d;
 import lia.Api;
+import lia.api.OpponentInView;
 import lia.api.UnitData;
 
-public class ScoutingGroup implements UnitBehaviour {
-    int[] group;
+import java.util.ArrayList;
+
+class EnemiesInfo{
+    public ArrayList<OpponentInView> opponents = new ArrayList<>();
+    // must be updated every frame
+
+
+}
+
+public class ScoutingGroup extends UnitGroup {
+
+    // Note: concept of zones - tell how many scouts you need by the number of zones, which can be based on numer of
+    // general paths.
+    // Note: fog of war - have scouts explore it.
+
     LongPlanning[] planner;
 
     ScoutingGroup(int[] unitIds, MyMap map, Vec2d startingPos){
@@ -15,15 +29,6 @@ public class ScoutingGroup implements UnitBehaviour {
             planner[i].SetPlan_2Sides(startingPos.x > 300,
                     (double)(i+1)/(group.length) *(map.height-5), map.width);
         }
-    }
-
-    void ExecutePlans(int i, UnitData unit, LongPlanning plan, Api api){
-        //api.navigationStart(unit.id, (int)plan.plan[1].x+1,(int) plan.plan[1].y+1);
-    }
-
-    @Override
-    public void Behave() {
-
     }
 
     public void ExecutePlans(Api api) {
@@ -47,13 +52,9 @@ public class ScoutingGroup implements UnitBehaviour {
                     }
                 }
             }
-
         }
-        once = true;
-
         return  true;
     }
-
 
     boolean IsDone(UnitData unit) {
         return unit.navigationPath.length == 0;
@@ -80,6 +81,7 @@ class LongPlanning{
     }
 
 }
+
 class Sector{
     int sectorX,  sectorY;
     int pixelsWidth, pixelsHeight;

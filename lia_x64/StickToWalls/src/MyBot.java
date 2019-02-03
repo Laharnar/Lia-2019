@@ -3,6 +3,7 @@ import lia.api.*;
 import lia.*;
 
 import java.nio.channels.FileChannel;
+import java.security.acl.Group;
 import java.util.*;
 
 class TestEnv{
@@ -12,43 +13,6 @@ class TestEnv{
         wallsSrc = new TargetIterator(new ArrayList<MapNode>());
     }
 }
-
-class TargetIterator{
-    public List<MapNode> targets = new ArrayList<MapNode>();
-    int targetId = 0;
-
-    TargetIterator(List<MapNode> targets){
-        this.targets = targets;
-    }
-
-    public List<MapNode> getTargets() {
-        return targets;
-    }
-
-    public int getTargetId(){
-        return targetId;
-    }
-
-    public MapNode getItem(boolean inclusive, int width, int height){
-        MapNode n = targets.size() > 0 ? targets.get(getTargetId()) : null;
-        if (inclusive){
-            if (n.x == 0 || n.x == width-1 || n.y == 0 || n.y == height-1)
-                n = null;
-        }
-        return n;
-    }
-
-    public MapNode getItem(){
-        return targets.size() > 0 ? targets.get(getTargetId()) : null;
-    }
-
-    public void goNext(){
-        targetId ++;
-        if (targetId == targets.size())
-            targetId--;
-    }
-}
-
 
 interface UnitBehaviour{
     void Behave();
@@ -65,8 +29,11 @@ public class MyBot implements Bot {
     int myMode = 0;
     TestEnv env;
     boolean firstInit = false;
+    CombatManager manager;
 
+    // generalize these groups into strategies
     ScoutingGroup scouts;
+    OffensiveGroup[] attacking;
 
     // In this method we receive the basic information about the game environment.
     // - GameEnvironment reference: https://docs.liagame.com/api/#gameenvironment
@@ -80,35 +47,66 @@ public class MyBot implements Bot {
         env.wallsSrc = new TargetIterator(myMap.getWalls());
         myMap.printDrawWallCount();
         myMap.printWallRegionId();
-
+        manager = new CombatManager();
     }
     int state = 0;
-    UnitData testing;
+
     // This is the main method where you control your bot. 10 times per game second it receives
     // current game state. Use Api object to call actions on your units.
     // - GameState reference: https://docs.liagame.com/api/#gamestate
     // - Api reference:       https://docs.liagame.com/api/#api-object
     @Override
     public synchronized void processGameState(GameState gameState, Api api) {
+
         if (firstInit == false) {
+            Vec2d startingPos = gameState.units[0].getPos();
             firstInit = true;
-            int[] x = new int[gameState.units.length];
-            for (int i = 0; i < x.length; i++) {
-                x[i] = i;
-            }
-            scouts = new ScoutingGroup(x, myMap, gameState.units[0].getPos());
+            scouts = new ScoutingGroup(GroupFactory.PickMaximalToCoverMapHeight(), myMap, startingPos);
             scouts.ExecutePlans(api);
-            System.out.println(gameState.units[0].navigationPath.length);
-            testing = gameState.units[0];
+
+            manager.ApplyBehaviors(scouts.group, scouts);
+
+            attacking = new OffensiveGroup[5];
+            for (int i = 0; i < 5; i++) {
+                int[] newGroup =  manager.GetFreeUnits(3);
+                if (manager.ValidGroup(newGroup)){
+                    System.out.println("Creating attack group of 3 id: "+i);
+                    attacking[i] = new OffensiveGroup(newGroup, myMap, startingPos);
+                    manager.ApplyBehaviors(newGroup, attacking[i]);
+                }
+            }
+
             return;
         }
-        if (scouts.Done(gameState.units) && state == 0){
+        // Update manager
+        manager.gameState = gameState;
+        for (int i = 0; i < gameState.units.length; i++) {
+            manager.data.put(gameState.units[i].id, gameState.units[i]);
+        }
 
-            System.out.println(gameState.units[0].navigationPath.length);
-            System.out.println("Next state");
+        // scouts
+        if (scouts.Done(gameState.units) && state == 0){
             state++;
             scouts.NextState();
             scouts.ExecutePlans(api);
+        }
+
+        // [Processing detection]
+        manager.visibleEnemies = OffensiveGroup.CollectEnemyData(gameState.units);
+
+        // Send aggressive squads
+        if (manager.visibleEnemies.opponents.size() > 0){
+            System.out.println("EnemyCount "+manager.visibleEnemies.opponents.size());
+            for (int i = 0; i < attacking.length; i++) {
+                if (attacking[i] != null)
+                attacking[i].targetPos = manager.RandomEnemy();
+
+            }
+        }
+        for (int i = 0; i < attacking.length; i++) {
+            if (attacking[i] == null) continue;;
+            attacking[i].behave = manager.visibleEnemies.opponents.size() > 0;
+            attacking[i].ExecutePlans(api, manager);
         }
 
         if (true)

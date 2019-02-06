@@ -1,5 +1,6 @@
 import com.sun.javafx.geom.Vec2d;
 import lia.Api;
+import lia.Constants;
 import lia.api.OpponentInView;
 import lia.api.UnitData;
 
@@ -17,21 +18,29 @@ public class OffensiveGroup extends UnitGroup {
 
     public void ExecutePlans(Api api, CombatManager manager) {
         if (!behave)return;
+        // nav to target position, or if have an enemy, attack
         EnemiesInfo info = manager.visibleEnemies;
         if (info.opponents.size() > 0)
         for (int i = 0; i < group.length; i++) {
-            UnitData unit = manager.data.get(group[i]);
-
-            if (unit.opponentsInView.length == 0) {
-                if (unit.navigationPath.length == 0) {
-                    System.out.println("Offensive Navigation : " + group[i]);
-                    api.navigationStart(group[i], (int) targetPos.x, (int) targetPos.y);
-                }
+            UnitInfo unit = manager.data.get(group[i]);
+            if (unit.unitState.opponentsInView.length == 0) {
+                api.saySomething(unit.unitState.id, "Nav out of combat");
+                NavigateOutOfCombat(api, group[i], unit);
             }else  {
-                api.shoot(group[i]);
+                api.saySomething(unit.unitState.id, "Nav in combat, shoot");
+                if (unit.mechanics.ManeveurNearClosestEnemy(unit, Constants.VIEWING_AREA_LENGTH)){
+                    api.shoot(group[i]);
+                }
             }
         }
     }
+
+    private void NavigateOutOfCombat(Api api, int i, UnitInfo unit) {
+        if (unit.unitState.navigationPath.length > 0) return;
+        System.out.println("Offensive Navigation : " + i);
+        api.navigationStart(i, (int) targetPos.x, (int) targetPos.y);
+    }
+
 
     // collect from n units
     public static EnemiesInfo CollectEnemyData(int[] group, UnitData[] allAllies){

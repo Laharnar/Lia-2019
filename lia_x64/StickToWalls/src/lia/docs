@@ -5,3 +5,42 @@ Long term pathing isn't all that useful vs short term. And it's not directly use
 Offensive:
 Tactics idea: Instead of attacking enemies with navigation every turn, go for area in vicinity to regroup.
 But setting it to position makes sure they go there even when enemies are lost.
+
+Currently done:
+-Scouting groups.
+Description 3.2.19: spread out over the map width, and scan it in 1 wave.
+
+Their purpose is to find the enemy
+-Offensive groups.[Rename hunter]
+Description 3.2.19: attack random visible enemy, fire if any enemy is visible.
+Their purpose is to find a single unit and quickly dispatch it.
+
+----------------------
+
+
+
+----------------------
+Map analyzation: where is the best to go. walls to use, corners, small edges for camping
+
+Grand strategies: predict, reinforce, medical, tactical retreat, for security.
+WHAT would be best to happen in the future.
+
+Strategy: camp, regroup, rush, scout, hunt. reorganization of units, positioning.
+No direct control over firing and moving.
+WHAT should be happening now with the group.
+
+Tactic:Engage free, snipe, spread, search-turn, burst and run, place at wall.
+Movement control and custom firing moves
+HOW is it happening now in the group.
+
+Sensors: Anaylzation of unit's visuals separately and all units and single group separately.
+WHERE should we go?
+
+Micro: In-combat minimial movement changes, like not firing when allies in front, hiding behind walls,
+avoiding bullets, just tanking.
+HOW should an individual treat itself.
+
+Out of combat:
+Movement flow: navigate around the map
+
+----------------------------

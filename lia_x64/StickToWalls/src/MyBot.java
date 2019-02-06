@@ -34,6 +34,7 @@ public class MyBot implements Bot {
     // generalize these groups into strategies
     ScoutingGroup scouts;
     OffensiveGroup[] attacking;
+    ArrayList<UnitGroup> allGroups = new ArrayList<>();
 
     // In this method we receive the basic information about the game environment.
     // - GameEnvironment reference: https://docs.liagame.com/api/#gameenvironment
@@ -61,27 +62,43 @@ public class MyBot implements Bot {
         if (firstInit == false) {
             Vec2d startingPos = gameState.units[0].getPos();
             firstInit = true;
+            // init scouts
             scouts = new ScoutingGroup(GroupFactory.PickMaximalToCoverMapHeight(), myMap, startingPos);
             scouts.ExecutePlans(api);
 
             manager.ApplyBehaviors(scouts.group, scouts);
 
-            attacking = new OffensiveGroup[5];
-            for (int i = 0; i < 5; i++) {
+            // init offensive
+            attacking = new OffensiveGroup[3];
+            for (int i = 0; i < 3; i++) {
                 int[] newGroup =  manager.GetFreeUnits(3);
-                if (manager.ValidGroup(newGroup)){
+                if (manager.GroupProperlyCreated(newGroup)){
                     System.out.println("Creating attack group of 3 id: "+i);
                     attacking[i] = new OffensiveGroup(newGroup, myMap, startingPos);
                     manager.ApplyBehaviors(newGroup, attacking[i]);
                 }
             }
-
+            // init mechanics testing
+            for (int i = 0; i < 1; i++) {
+                int[] newGroup =  manager.GetFreeUnits(3);
+                if (manager.GroupProperlyCreated(newGroup)){
+                    System.out.println("Creating test group of 3 id: "+4);
+                    allGroups.add(new OffensiveGroup(newGroup, myMap, startingPos));
+                    manager.ApplyBehaviors(newGroup, attacking[i]);
+                }
+            }
             return;
         }
-        // Update manager
+        // Update manager - retrieve all unit data
         manager.gameState = gameState;
+        manager.api = api;
         for (int i = 0; i < gameState.units.length; i++) {
-            manager.data.put(gameState.units[i].id, gameState.units[i]);
+            UnitInfo info = manager.data.get(gameState.units[i].id);
+            if (info== null) {
+                info = new UnitInfo();
+            }
+            info.unitState = gameState.units[i];
+            manager.data.put(gameState.units[i].id, info);
         }
 
         // scouts

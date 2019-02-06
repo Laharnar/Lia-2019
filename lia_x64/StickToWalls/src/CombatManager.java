@@ -1,16 +1,23 @@
 import com.sun.javafx.geom.Vec2d;
+import lia.Api;
 import lia.api.OpponentInView;
+import lia.api.Speed;
 import lia.api.UnitData;
 import lia.api.GameState;
 
 import java.util.*;
 
+class UnitNavigation {
+
+}
+
 public class CombatManager{
 
+    public static Api api;
     public EnemiesInfo visibleEnemies;
 
     public Map<Integer, UnitGroup> behaviour = new HashMap<Integer, UnitGroup>();
-    public Map<Integer, UnitData> data = new HashMap<Integer, UnitData>();// per frame updated data
+    public Map<Integer, UnitInfo> data = new HashMap<Integer, UnitInfo>();// per frame updated data
 
     Random rand;
     public GameState gameState;
@@ -48,7 +55,7 @@ public class CombatManager{
         return group;
     }
 
-    public boolean ValidGroup(int[] newGroup) {
+    public boolean GroupProperlyCreated(int[] newGroup) {
         for (int i = 0; i < newGroup.length; i++) {
             if (newGroup[i] <0)
                 return false;

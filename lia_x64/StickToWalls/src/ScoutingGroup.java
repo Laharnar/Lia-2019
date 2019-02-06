@@ -14,9 +14,10 @@ class EnemiesInfo{
 
 public class ScoutingGroup extends UnitGroup {
 
-    // Note: concept of zones - tell how many scouts you need by the number of zones, which can be based on numer of
+    // Note: optimizing movement choices:
+    // concept of zones - tell how many scouts you need by the number of zones, which can be based on numer of
     // general paths.
-    // Note: fog of war - have scouts explore it.
+    // Note: improved results: fog of war - have scouts explore it.
 
     LongPlanning[] planner;
 
@@ -46,14 +47,14 @@ public class ScoutingGroup extends UnitGroup {
     public boolean Done(UnitData[] units) {
         for (int i = 0; i < group.length; i++) {
             for (int j = 0; j < units.length; j++) {
-                if (units[i].id == group[i]){
-                    if (IsDone(units[group[i]]) == false){
+                if (units[j].id == group[i]){
+                    if (IsDone(units[j]) == false){
                         return false;
                     }
                 }
             }
         }
-        return  true;
+        return true;
     }
 
     boolean IsDone(UnitData unit) {
